@@ -6,7 +6,7 @@
 > **Architectural overview for the Chomp Foods Nutrition API, serving 28M+ records to health and fitness applications globally.**
 
 ## 📖 About Chomp API
-The [Chomp Foods API](https://chompthis.com/api) is a specialized nutrition engine that goes beyond simple data retrieval. It interprets complex ingredient lists to determine dietary suitability (Vegan, Gluten-Free, etc.) for **900,000+ foods**. This repository documents the legacy high-scale architecture that powers the platform.
+The [Chomp Foods API](https://chompthis.com/api) is a specialized nutrition engine that goes beyond simple data retrieval. It interprets complex ingredient lists to determine dietary suitability (Vegan, Gluten-Free, etc.) for **900,000+ foods**. This repository documents the high-scale architecture that powers the platform.
 
 ## 🧐 The Problem
 
