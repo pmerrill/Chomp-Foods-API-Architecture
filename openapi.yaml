@@ -1,0 +1,274 @@
+openapi: 3.0.0
+info:
+  title: Chomp Foods Nutrition API
+  description: API v2 documentation. Serves branded and generic food data with dietary compatibility flags.
+  version: 2.0.0
+servers:
+  - url: https://chompthis.com/api/v2
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: api_key
+  schemas:
+    ProductItem:
+      type: object
+      properties:
+        barcode:
+          type: string
+          example: "0123456789"
+        name:
+          type: string
+          example: "Oat Milk"
+        brand:
+          type: string
+          example: "Oatly"
+        ingredients:
+          type: string
+          description: Raw ingredient string.
+        package:
+          type: object
+          properties:
+            quantity: 
+              type: integer
+            size:
+              type: string
+        serving:
+          type: object
+          properties:
+            size:
+              type: string
+            measurement_unit:
+              type: string
+            size_fulltext:
+              type: string
+        categories:
+          type: array
+          items:
+            type: string
+        nutrients:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              per_100g: 
+                type: number
+              measurement_unit:
+                type: string
+              rank:
+                type: integer
+              data_points:
+                type: integer
+              description:
+                type: string
+        diet_labels:
+          type: object
+          properties:
+            vegan:
+              $ref: '#/components/schemas/DietaryCompatibility'
+            vegetarian:
+              $ref: '#/components/schemas/DietaryCompatibility'
+            gluten_free:
+              $ref: '#/components/schemas/DietaryCompatibility'
+        diet_flags:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredient:
+                type: string
+              ingredient_description:
+                type: string
+              diet_label:
+                type: string
+              is_compatible:
+                type: string
+              compatibility_level: 
+                type: integer
+              compatibility_description:
+                type: string
+              is_allergen:
+                type: boolean
+        packaging_photos:
+          type: object
+          properties:
+            front:
+              $ref: '#/components/schemas/PhotoSizes'
+            nutrition:
+              $ref: '#/components/schemas/PhotoSizes'
+            ingredients:
+              $ref: '#/components/schemas/PhotoSizes'
+        allergens:
+          type: array
+          items:
+            type: string
+        brand_list:
+          type: array
+          items:
+            type: string
+        countries:
+          type: array
+          items:
+            type: string
+        country_details:
+          type: object
+          properties:
+            english_speaking:
+              type: integer
+            non_english_speaking:
+              type: integer
+        palm_oil_ingredients:
+          type: array
+          items:
+            type: string
+        ingredient_list:
+          type: array
+          items:
+            type: string
+        has_english_ingredients:
+          type: boolean
+        minerals:
+           type: array
+           items:
+             type: string
+        traces:
+           type: array
+           items:
+             type: string
+        vitamins:
+           type: array
+           items:
+             type: string
+        description:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+
+    DietaryCompatibility:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Vegan"
+        is_compatible:
+          type: boolean
+        compatibility_level:
+          type: integer
+          description: 0 = No, 1 = Unsure, 2 = Yes
+          enum: [0, 1, 2]
+        confidence:
+          type: integer
+          description: Algorithm confidence score.
+        confidence_description:
+          type: string
+
+    PhotoSizes:
+      type: object
+      properties:
+        small:
+          type: string
+        thumb:
+          type: string
+        display: 
+          type: string
+
+security:
+  - ApiKeyAuth: []
+paths:
+  /food/branded/barcode.php:
+    get:
+      summary: Lookup Product by Barcode
+      description: Returns detailed nutrition and dietary compatibility for a specific product.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: UPC-12, EAN-13, or EAN-8 barcode.
+        - name: user_id
+          in: query
+          schema:
+            type: string
+          description: End-user ID for rate limiting and personalization (Premium plan only).
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductItem'
+        '400':
+          description: Validation error - Invalid parameters or request.
+        '401': 
+          description: Unauthorized - Invalid API key, unauthorized access
+        '404':
+          description: Not found - No food items were found.
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error - Internal server error.
+
+  /food/branded/search.php:
+    get:
+      summary: Search Branded Foods
+      description: Fuzzy search products by brand, keyword, or dietary requirements.
+      parameters:
+        - name: brand
+          in: query
+          schema:
+            type: string
+          example: "Starbucks"
+        - name: keyword
+          in: query
+          schema:
+            type: string
+          example: "Organic"
+        - name: diet
+          in: query
+          schema:
+            type: string
+            enum: [Vegan, Vegetarian, Gluten Free]
+          description: Filter results to only compatible products.
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductItem'
+        '400':
+          description: Validation error - Invalid parameters or request.
+        '401': 
+          description: Unauthorized - Invalid API key, unauthorized access
+        '404':
+          description: Not found - No food items were found.
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error - Internal server error.
